@@ -83,13 +83,25 @@ function getPageIds() {
 }
 
 async function getVideoDetails(id) {
-  const jsonArray = await getVideoJSON(id);
+  const data = await getVideoJSON(id);
 
   try {
-    const playerResponse = jsonArray.find(item => Boolean(item.playerResponse)).playerResponse;
-    return playerResponse.videoDetails;
+    let playerResponse;
+    if (Array.isArray(data)) {
+      // If data is an array, find the item with playerResponse
+      playerResponse = data.find(item => Boolean(item.playerResponse))?.playerResponse;
+    } else if (data && typeof data === 'object' && data.playerResponse) {
+      // If data is an object, directly access playerResponse
+      playerResponse = data.playerResponse;
+    }
+
+    if (playerResponse) {
+      return playerResponse.videoDetails;
+    } else {
+      throw new Error("playerResponse not found in expected format");
+    }
   } catch (e) {
-    console.error(`Failed to get videoDetails from`, jsonArray);
+    console.error(`Failed to get videoDetails from`, data, e);
   }
 }
 
